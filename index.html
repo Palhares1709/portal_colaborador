@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portal do Colaborador - CMR</title>
+  <style>
+    :root { --primary-color: #008000; --accent-color: #ffcc00; --secondary-color: #cc0000; }
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; background-color: var(--primary-color); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; transition: background-color 0.3s; overflow-x: hidden; }
+    @keyframes subir { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes girar { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+    .animar { animation: subir 0.5s ease-out forwards; }
+    #modalAviso { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center; }
+    .caixa-aviso { background: #fff; padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; text-align: center; border-top: 8px solid var(--accent-color); animation: subir 0.3s ease-out; }
+    .btn-ok { background: var(--primary-color); color: #fff; border: none; padding: 12px 40px; border-radius: 50px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+    #telaLoading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+    .logo-loading { width: 100px; animation: girar 2.5s linear infinite; }
+    .barra-container { width: 200px; height: 8px; background: #eee; border-radius: 10px; margin-top: 20px; overflow: hidden; }
+    .barra-progresso { width: 0%; height: 100%; background: var(--secondary-color); transition: width 0.2s; }
+    .app-container { width: 100%; max-width: 400px; }
+    #cardLogo { background: #fff; padding: 15px; border-radius: 20px; margin: 10px 0; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    .logo-estatica { width: 100px; }
+    .card-tela { background: #fff; padding: 25px; border-radius: 25px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .input-padrao { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; text-align: center; outline: none; }
+    .btn-acao { background: var(--accent-color); color: #000; width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 14px; }
+    #telaDados { display: none; background: #f0f2f5; border-radius: 35px; padding-bottom: 25px; overflow: hidden; }
+    .header-user { background: var(--accent-color); padding: 12px; border-radius: 50px; margin: 15px; font-weight: 900; font-size: 13px; text-align: center; border: 1px solid #d4ac0d; text-transform: uppercase; }
+    .main-card { background: transparent; margin: 0 15px; padding: 0; }
+    .grid-row { display: grid; gap: 8px; margin-bottom: 8px; }
+    .card-mini { background: #fff; border: 1px solid #eee; border-radius: 15px; padding: 15px 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .label-mini { font-size: 11px; font-weight: 800; color: #666; text-transform: uppercase; display: block; line-height: 1.2; margin-bottom: 4px; }
+    .valor-mini { font-size: 22px; font-weight: bold; color: var(--secondary-color); }
+    .valor-mini-he { font-size: 28px; font-weight: bold; color: var(--primary-color); }
+    .card-valor { background: #fff; border: 1px solid #eee; border-radius: 18px; padding: 15px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .texto-valor-monetario { font-size: 22px; font-weight: 900; color: var(--primary-color); display: block; margin-top: 2px; }
+    .icon-luxo { font-size: 28px; }
+    .btn-sair { background: var(--accent-color); color: #000; width: 85%; margin: 20px auto 0 auto; padding: 14px; border: 1px solid #d4ac0d; border-radius: 15px; font-weight: 900; display: block; cursor: pointer; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+
+  <div id="modalAviso">
+    <div class="caixa-aviso">
+      <div id="iconeAviso" style="font-size: 45px; margin-bottom: 10px;">⚠️</div>
+      <h3 id="tituloAviso" style="margin:0; color:var(--secondary-color);">Aviso</h3>
+      <p id="textoAviso" style="font-weight:600; color:#444;"></p>
+      <button id="btnModal" class="btn-ok">ENTENDI</button>
+    </div>
+  </div>
+
+  <div id="telaLoading">
+    <img src="https://drive.google.com/thumbnail?id=1yolb4RdCPj3I8KVbr-lanpvz20tNAAaT&sz=w500" class="logo-loading">
+    <div class="barra-container"><div id="minhaBarra" class="barra-progresso"></div></div>
+  </div>
+
+  <div class="app-container">
+    <div id="cardLogo" class="animar"><img src="https://drive.google.com/thumbnail?id=1yolb4RdCPj3I8KVbr-lanpvz20tNAAaT&sz=w500" class="logo-estatica"></div>
+
+    <div id="telaLogin" class="card-tela animar">
+      <h2 style="color:var(--primary-color); font-size:20px; margin-top:0;">Portal CMR</h2>
+      <input type="email" id="emailLogin" class="input-padrao" placeholder="Digite seu e-mail">
+      <button id="btnEntrar" onclick="entrar()" class="btn-acao">ENTRAR</button>
+      <p id="msgStatus" style="font-size:13px; font-weight:bold; margin-top:15px;"></p>
+    </div>
+
+    <div id="telaCadastro" class="card-tela animar" style="display:none;">
+      <div id="conteudoCadastro">
+        <h2 style="color:var(--secondary-color); font-size:18px;">Solicitar Acesso</h2>
+        <input type="text" id="cadNome" class="input-padrao" placeholder="Seu Nome Completo">
+        <input type="email" id="cadEmail" class="input-padrao" readonly style="background:#f9f9f9;">
+        <button id="btnSalvar" onclick="salvarNovoCadastro()" class="btn-acao" style="background:var(--primary-color); color:#fff;">ENVIAR AO RH</button>
+      </div>
+    </div>
+
+    <div id="telaDados" class="animar">
+      <div class="header-user">👤 <span id="txtNomeHeader">COLABORADOR</span></div>
+      <div class="main-card">
+        <div class="grid-row" style="grid-template-columns: 1fr 1fr 1fr;">
+          <div class="card-mini"><span class="label-mini">FALTA(S) MÊS ANT.</span><span class="valor-mini" id="fAnt">0</span></div>
+          <div class="card-mini"><span class="label-mini">FALTA(S) MÊS ATUAL</span><span class="valor-mini" id="fAtual">0</span></div>
+          <div class="card-mini"><span class="label-mini">HORAS FALTAS</span><span class="valor-mini" id="fHoras">0h</span></div>
+        </div>
+        <div class="grid-row" style="grid-template-columns: 1fr 1fr;">
+          <div class="card-mini"><span class="label-mini">HE 50%</span><span class="valor-mini-he" id="he50">0h</span></div>
+          <div class="card-mini"><span class="label-mini">HE 100%</span><span class="valor-mini-he" id="he100">0h</span></div>
+        </div>
+        <div class="card-valor">
+          <div style="text-align:left;"><span class="label-mini">Gratificação</span><span class="texto-valor-monetario" id="valGrat">R$ 0,00</span></div><span class="icon-luxo">💰</span>
+        </div>
+        <div class="card-valor">
+          <div style="text-align:left;"><span class="label-mini">Assiduidade</span><span class="texto-valor-monetario" id="valAssid">R$ 0,00</span></div><span class="icon-luxo">🏅</span>
+        </div>
+        <div class="card-valor">
+          <div style="text-align:left;"><span class="label-mini">Aux. Transporte</span><span class="texto-valor-monetario" id="valAux">R$ 0,00</span></div><span class="icon-luxo">🚌</span>
+        </div>
+        <div class="card-valor">
+          <div style="text-align:left;"><span class="label-mini">Ajuda Custos</span><span class="texto-valor-monetario" id="valAjuda">R$ 0,00</span></div><span class="icon-luxo">💵</span>
+        </div>
+        <button class="btn-sair" onclick="sair()">SAIR DO PORTAL</button>
+      </div>
+      <p style="text-align:center; font-size:10px; color:#999; margin-top:20px;">CMR BRASIL • 2026</p>
+    </div>
+  </div>
+
+  <script>
+    // --- CONFIGURAÇÃO DA PONTE GITHUB -> GOOGLE ---
+    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzTllds645GsrL8qmA89JL1ocZRoNez5AeWN_6aFeDSph5WXi8KzDPmMGJ8_481cZCeAA/exec";
+
+    const googleProxy = {
+      run: (funcao, args) => {
+        return fetch(URL_SCRIPT, {
+          method: "POST",
+          body: JSON.stringify({ funcao: funcao, args: args })
+        }).then(res => res.json());
+      }
+    };
+    // ----------------------------------------------
+
+    var erroCount = 0;
+
+    function abrirModal(titulo, texto, tipo, acaoOK) {
+      document.getElementById("tituloAviso").innerText = titulo;
+      document.getElementById("textoAviso").innerText = texto;
+      document.getElementById("iconeAviso").innerText = (tipo === "sucesso") ? "✅" : "⚠️";
+      var modal = document.getElementById("modalAviso");
+      var btn = document.getElementById("btnModal");
+      modal.style.display = "flex";
+      btn.onclick = function() {
+        modal.style.display = "none";
+        if(acaoOK) acaoOK();
+      };
+    }
+
+    window.onload = function() {
+      var barra = document.getElementById("minhaBarra");
+      var p = 0;
+      var t = setInterval(() => {
+        if(p >= 100) { clearInterval(t); setTimeout(() => document.getElementById("telaLoading").style.display="none", 400); }
+        else { p += 10; barra.style.width = p + "%"; }
+      }, 50);
+    };
+
+    async function entrar() {
+      var email = document.getElementById("emailLogin").value.trim().toLowerCase();
+      var msg = document.getElementById("msgStatus");
+      if(!email) { msg.innerText = "Digite seu e-mail!"; return; }
+      msg.style.color = "green"; msg.innerText = "Validando...";
+      document.getElementById("btnEntrar").disabled = true;
+
+      try {
+        const res = await googleProxy.run("buscarDadosColaborador", [email]);
+        document.getElementById("btnEntrar").disabled = false;
+        
+        if(res.status === "sucesso") {
+          document.getElementById("txtNomeHeader").innerText = res.matricula + " - " + res.nome;
+          document.getElementById("fAnt").innerText = res.faltasAnt;
+          document.getElementById("fAtual").innerText = res.faltasMesAtual;
+          document.getElementById("fHoras").innerText = res.faltasHoras + "h";
+          document.getElementById("he50").innerText = res.horas50 + "h";
+          document.getElementById("he100").innerText = res.horas100 + "h";
+          var opt = { minimumFractionDigits: 2 };
+          document.getElementById("valGrat").innerText = "R$ " + res.gratificacao.toLocaleString('pt-BR', opt);
+          document.getElementById("valAssid").innerText = "R$ " + res.assiduidade.toLocaleString('pt-BR', opt);
+          document.getElementById("valAux").innerText = "R$ " + res.auxTransporte.toLocaleString('pt-BR', opt);
+          document.getElementById("valAjuda").innerText = "R$ " + res.ajudaCustos.toLocaleString('pt-BR', opt);
+
+          document.body.style.backgroundColor = "#f0f2f5";
+          document.getElementById("telaLogin").style.display = "none";
+          document.getElementById("cardLogo").style.display = "none";
+          document.getElementById("telaDados").style.display = "block";
+          
+          if(res.msgFolhaPlanilha && !res.isAdmin) {
+             abrirModal("Informativo RH", res.msgFolhaPlanilha, "sucesso");
+          }
+          if(res.isAdmin && res.pendentes > 0) abrirModal("RH CMR", "Olá! Você tem " + res.pendentes + " novas solicitações pendentes.", "aviso");
+        } else if(res.status === "bloqueado") {
+          abrirModal("Folha em processamento...", res.mensagem, "aviso", () => sair());
+        } else {
+          erroCount++;
+          if(erroCount >= 2) { 
+            document.getElementById("telaLogin").style.display = "none"; 
+            document.getElementById("telaCadastro").style.display = "block";
+            document.getElementById("cadEmail").value = email;
+          } else { msg.style.color = "red"; msg.innerText = res.mensagem; }
+        }
+      } catch (e) {
+        document.getElementById("btnEntrar").disabled = false;
+        msg.innerText = "Erro ao conectar com o servidor.";
+      }
+    }
+
+    async function salvarNovoCadastro() {
+      var btn = document.getElementById("btnSalvar");
+      var d = { nome: document.getElementById("cadNome").value, email: document.getElementById("cadEmail").value };
+      if(!d.nome) { abrirModal("Atenção", "Digite seu nome completo!", "aviso"); return; }
+      btn.disabled = true; btn.innerText = "ENVIANDO...";
+      
+      try {
+        const res = await googleProxy.run("processarNovoCadastro", [d]);
+        if(res.status === "sucesso") {
+          document.getElementById("conteudoCadastro").innerHTML = "<h3 style='color:green;'>Dados enviados!</h3><p>O RH analisará seu cadastro.</p><button onclick='sair()' class='btn-acao'>VOLTAR</button>";
+        } else {
+          abrirModal("Portal CMR", res.mensagem, "aviso", function() { sair(); });
+          btn.disabled = false; btn.innerText = "ENVIAR AO RH";
+        }
+      } catch (e) {
+        btn.disabled = false;
+        abrirModal("Erro", "Falha ao enviar cadastro.", "aviso");
+      }
+    }
+
+    function sair() {
+      document.body.style.backgroundColor = "var(--primary-color)";
+      document.getElementById("cardLogo").style.display = "block";
+      document.getElementById("telaLogin").style.display = "block";
+      document.getElementById("telaDados").style.display = "none";
+      document.getElementById("telaCadastro").style.display = "none";
+      document.getElementById("emailLogin").value = "";
+      document.getElementById("msgStatus").innerText = "";
+      erroCount = 0;
+    }
+  </script>
+</body>
+</html>
