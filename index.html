@@ -104,16 +104,23 @@
   </div>
 
   <script>
+    // --- LINK DA API (IMPORTANTE: Verifique se este link é o da sua ÚLTIMA implantação) ---
     const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzTllds645GsrL8qmA89JL1ocZRoNez5AeWN_6aFeDSph5WXi8KzDPmMGJ8_481cZCeAA/exec";
 
+    // Ponte para comunicação entre GitHub e Google Script
     const googleProxy = {
       run: async (funcao, args) => {
-        const response = await fetch(URL_SCRIPT, {
-          method: "POST",
-          body: JSON.stringify({ funcao: funcao, args: args }),
-          headers: { "Content-Type": "text/plain;charset=utf-8" }
-        });
-        return response.json();
+        try {
+          const response = await fetch(URL_SCRIPT, {
+            method: "POST",
+            body: JSON.stringify({ funcao: funcao, args: args }),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+          });
+          return await response.json();
+        } catch (e) {
+          console.error("Erro na comunicação:", e);
+          throw e;
+        }
       }
     };
 
@@ -145,7 +152,7 @@
       var email = document.getElementById("emailLogin").value.trim().toLowerCase();
       var msg = document.getElementById("msgStatus");
       if(!email) { msg.innerText = "Digite seu e-mail!"; return; }
-      msg.style.color = "green"; msg.innerText = "Validando...";
+      msg.style.color = "blue"; msg.innerText = "Validando acesso...";
       document.getElementById("btnEntrar").disabled = true;
 
       try {
