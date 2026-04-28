@@ -104,19 +104,26 @@
   </div>
 
   <script>
-    // --- LINK DA API (IMPORTANTE: Verifique se este link é o da sua ÚLTIMA implantação) ---
+    // --- LINK DA API ---
     const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzTllds645GsrL8qmA89JL1ocZRoNez5AeWN_6aFeDSph5WXi8KzDPmMGJ8_481cZCeAA/exec";
 
-    // Ponte para comunicação entre GitHub e Google Script
+    // Ponte de comunicação com tratamento de redirecionamento do Google
     const googleProxy = {
       run: async (funcao, args) => {
         try {
           const response = await fetch(URL_SCRIPT, {
             method: "POST",
+            mode: "no-cors", // Tenta enviar mesmo com restrições
             body: JSON.stringify({ funcao: funcao, args: args }),
             headers: { "Content-Type": "text/plain;charset=utf-8" }
           });
-          return await response.json();
+          
+          // Como o no-cors não permite ler a resposta, tentamos o modo normal logo em seguida
+          const realResponse = await fetch(URL_SCRIPT, {
+            method: "POST",
+            body: JSON.stringify({ funcao: funcao, args: args })
+          });
+          return await realResponse.json();
         } catch (e) {
           console.error("Erro na comunicação:", e);
           throw e;
@@ -152,7 +159,7 @@
       var email = document.getElementById("emailLogin").value.trim().toLowerCase();
       var msg = document.getElementById("msgStatus");
       if(!email) { msg.innerText = "Digite seu e-mail!"; return; }
-      msg.style.color = "blue"; msg.innerText = "Validando acesso...";
+      msg.style.color = "blue"; msg.innerText = "Sincronizando com o RH...";
       document.getElementById("btnEntrar").disabled = true;
 
       try {
@@ -180,7 +187,7 @@
           if(res.msgFolhaPlanilha && !res.isAdmin) {
              abrirModal("Informativo RH", res.msgFolhaPlanilha, "sucesso");
           }
-          if(res.isAdmin && res.pendentes > 0) abrirModal("RH CMR", "Olá! Você tem " + res.pendentes + " novas solicitações pendentes.", "aviso");
+          if(res.isAdmin && res.pendentes > 0) abrirModal("RH CMR", "Olá! Você tem " + res.pendentes + " solicitações pendentes.", "aviso");
         } else if(res.status === "bloqueado") {
           abrirModal("Folha em processamento...", res.mensagem, "aviso", () => sair());
           msg.innerText = "";
@@ -194,7 +201,8 @@
         }
       } catch (e) {
         document.getElementById("btnEntrar").disabled = false;
-        msg.innerText = "Erro ao conectar com o servidor.";
+        msg.style.color = "red";
+        msg.innerText = "Erro ao conectar. Tente novamente.";
       }
     }
 
