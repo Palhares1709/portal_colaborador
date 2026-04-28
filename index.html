@@ -104,32 +104,24 @@
   </div>
 
   <script>
-    // --- LINK DA API ---
+    // --- LINK DA API (O mesmo que deu "Ativa e Operante") ---
     const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzTllds645GsrL8qmA89JL1ocZRoNez5AeWN_6aFeDSph5WXi8KzDPmMGJ8_481cZCeAA/exec";
 
-    // Ponte de comunicação com tratamento de redirecionamento do Google
-    const googleProxy = {
-      run: async (funcao, args) => {
-        try {
-          const response = await fetch(URL_SCRIPT, {
-            method: "POST",
-            mode: "no-cors", // Tenta enviar mesmo com restrições
-            body: JSON.stringify({ funcao: funcao, args: args }),
-            headers: { "Content-Type": "text/plain;charset=utf-8" }
-          });
-          
-          // Como o no-cors não permite ler a resposta, tentamos o modo normal logo em seguida
-          const realResponse = await fetch(URL_SCRIPT, {
-            method: "POST",
-            body: JSON.stringify({ funcao: funcao, args: args })
-          });
-          return await realResponse.json();
-        } catch (e) {
-          console.error("Erro na comunicação:", e);
-          throw e;
-        }
-      }
-    };
+    // MÉTODO DE CONEXÃO INFALÍVEL PARA GITHUB
+    async function apiGoogle(funcao, args) {
+        const urlFinal = URL_SCRIPT + "?funcao=" + funcao + "&args=" + encodeURIComponent(JSON.stringify(args));
+        
+        // Usamos um formulário oculto ou fetch simples para evitar o erro de CORS do Google
+        return fetch(urlFinal)
+            .then(res => res.json())
+            .catch(err => {
+                // Se o fetch falhar, tentamos via POST como última alternativa
+                return fetch(URL_SCRIPT, {
+                    method: "POST",
+                    body: JSON.stringify({ funcao: funcao, args: args })
+                }).then(r => r.json());
+            });
+    }
 
     var erroCount = 0;
 
@@ -159,11 +151,11 @@
       var email = document.getElementById("emailLogin").value.trim().toLowerCase();
       var msg = document.getElementById("msgStatus");
       if(!email) { msg.innerText = "Digite seu e-mail!"; return; }
-      msg.style.color = "blue"; msg.innerText = "Sincronizando com o RH...";
+      msg.style.color = "blue"; msg.innerText = "Conectando ao banco de dados...";
       document.getElementById("btnEntrar").disabled = true;
 
       try {
-        const res = await googleProxy.run("buscarDadosColaborador", [email]);
+        const res = await apiGoogle("buscarDadosColaborador", [email]);
         document.getElementById("btnEntrar").disabled = false;
         
         if(res.status === "sucesso") {
@@ -187,7 +179,7 @@
           if(res.msgFolhaPlanilha && !res.isAdmin) {
              abrirModal("Informativo RH", res.msgFolhaPlanilha, "sucesso");
           }
-          if(res.isAdmin && res.pendentes > 0) abrirModal("RH CMR", "Olá! Você tem " + res.pendentes + " solicitações pendentes.", "aviso");
+          if(res.isAdmin && res.pendentes > 0) abrirModal("RH CMR", "Olá! Você tem " + res.pendentes + " novas solicitações pendentes.", "aviso");
         } else if(res.status === "bloqueado") {
           abrirModal("Folha em processamento...", res.mensagem, "aviso", () => sair());
           msg.innerText = "";
@@ -202,7 +194,7 @@
       } catch (e) {
         document.getElementById("btnEntrar").disabled = false;
         msg.style.color = "red";
-        msg.innerText = "Erro ao conectar. Tente novamente.";
+        msg.innerText = "Erro ao conectar. Tente novamente em instantes.";
       }
     }
 
@@ -213,7 +205,7 @@
       btn.disabled = true; btn.innerText = "ENVIANDO...";
       
       try {
-        const res = await googleProxy.run("processarNovoCadastro", [d]);
+        const res = await apiGoogle("processarNovoCadastro", [d]);
         if(res.status === "sucesso") {
           document.getElementById("conteudoCadastro").innerHTML = "<h3 style='color:green;'>Dados enviados!</h3><p>O RH analisará seu cadastro.</p><button onclick='sair()' class='btn-acao'>VOLTAR</button>";
         } else {
