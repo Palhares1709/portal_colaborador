@@ -90,23 +90,39 @@
     .card-valor { background: #fff; border: 1px solid #eee; border-radius: 18px; padding: 15px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .texto-valor-monetario { font-size: 22px; font-weight: 900; color: var(--primary-color); display: block; margin-top: 2px; }
     
-/* EFEITO PREMIUM APPLOC */
+
+/* EFEITO PREMIUM APPLOC - VERSÃO 2 */
+
 .numero-animando {
-  animation: brilhoNumero 1.2s ease-out;
+  display: inline-block;
+  transform-origin: center;
+  will-change: transform, filter;
+  animation: brilhoNumero 2s ease-in-out both;
 }
 
 @keyframes brilhoNumero {
   0% {
-    text-shadow: 0 0 0 transparent;
+    transform: scale(0.85);
+    filter: drop-shadow(0 0 0 transparent);
+    text-shadow: none;
   }
-  35% {
-    text-shadow: 0 0 12px rgba(0, 140, 255, 0.75);
+
+  25% {
+    transform: scale(1.18);
+    filter: drop-shadow(0 0 9px #168BFF);
+    text-shadow: 0 0 14px rgba(0,140,255,0.9);
   }
-  70% {
-    text-shadow: 0 0 7px rgba(0, 140, 255, 0.35);
+
+  55% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 12px #168BFF);
+    text-shadow: 0 0 18px rgba(0,140,255,0.7);
   }
+
   100% {
-    text-shadow: 0 0 0 transparent;
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 transparent);
+    text-shadow: none;
   }
 }
 
@@ -227,7 +243,92 @@
  * Duração: 1,2 segundo
  */
 
+
+/**
+ * APPLOC PREMIUM - CONTAGEM ANIMADA
+ * Duração: 2 segundos
+ */
+
 function animarContagem(id, valorFinal, formatador, textoFinal) {
+
+  var elemento = document.getElementById(id);
+
+  if (!elemento) return;
+
+  // Converter números brasileiros corretamente
+  function converterNumero(valor) {
+
+    if (typeof valor === "number") return valor;
+
+    var texto = String(valor)
+      .replace("R$", "")
+      .replace(/h/gi, "")
+      .replace(/\s/g, "")
+      .trim();
+
+    if (texto.includes(",")) {
+      texto = texto.replace(/\./g, "").replace(",", ".");
+    }
+
+    return Number(texto);
+  }
+
+  var destino = converterNumero(valorFinal);
+
+  if (!Number.isFinite(destino)) {
+    elemento.innerText = textoFinal;
+    return;
+  }
+
+  var inicio = 0;
+  var duracao = 2000;
+  var tempoInicial = null;
+
+  // Reiniciar o efeito visual
+  elemento.classList.remove("numero-animando");
+  void elemento.offsetWidth;
+  elemento.classList.add("numero-animando");
+
+  // Mostrar o início da contagem
+  elemento.innerText = formatador(0);
+
+  function atualizar(tempoAtual) {
+
+    if (tempoInicial === null) {
+      tempoInicial = tempoAtual;
+    }
+
+    var progresso = Math.min(
+      (tempoAtual - tempoInicial) / duracao,
+      1
+    );
+
+    // Desaceleração suave
+    var suavizacao = 1 - Math.pow(1 - progresso, 3);
+
+    var valorAtual =
+      inicio + (destino - inicio) * suavizacao;
+
+    elemento.innerText = formatador(valorAtual);
+
+    if (progresso < 1) {
+
+      requestAnimationFrame(atualizar);
+
+    } else {
+
+      // Valor final exato da planilha
+      elemento.innerText = textoFinal;
+
+      setTimeout(function() {
+        elemento.classList.remove("numero-animando");
+      }, 100);
+    }
+  }
+
+  requestAnimationFrame(atualizar);
+}
+
 
   var elemento = document.getElementById(id);
 
