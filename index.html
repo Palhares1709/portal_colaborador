@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <base target="_top">
+  <base target="_top">var destino = converterNumero(valorFinal);
+
+if (!Number.isFinite(destino)) {
+  elemento.innerText = textoFinal;
+  return;
+}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Portal do Colaborador - CMR</title>
@@ -273,12 +278,21 @@ function animarContagem(id, valorFinal, formatador, textoFinal) {
     return Number(texto);
   }
 
-  var destino = converterNumero(valorFinal);
+  
+var destino = converterNumero(valorFinal);
 
-  if (!Number.isFinite(destino)) {
-    elemento.innerText = textoFinal;
-    return;
-  }
+if (!Number.isFinite(destino)) {
+  elemento.innerText = textoFinal;
+  return;
+}
+
+// SE O VALOR FOR ZERO, MOSTRAR TRAÇO
+if (destino === 0) {
+  elemento.classList.remove("numero-animando");
+  elemento.innerText = "-";
+  return;
+}
+
 
   var inicio = 0;
   var duracao = 2000;
