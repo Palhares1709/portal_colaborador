@@ -229,7 +229,7 @@
       try {
         const res = await chamarAPI("processarNovoCadastro", [d]);
         if(res.status === "sucesso") {
-          document.getElementById("conteudoCadastro").innerHTML = "<h3 style='color:green;'>Dados enviados!</h3><p>O RH analisará seu cadastro.</p><button onclick='sair()' class='btn-acao'>VOLTAR</button>";
+          document.getElementById("conteudoCadastro").innerHTML = "<h3 style='color:green;'>Dados enviados!</h3><p>Aguarde o cadastro...</p><button onclick='sair()' class='btn-acao'>VOLTAR</button>";
         } else {
           abrirModal("Portal CMR", res.mensagem, "aviso", function() { sair(); });
           btn.disabled = false; btn.innerText = "ENVIAR AO RH";
