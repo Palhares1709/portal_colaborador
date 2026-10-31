@@ -6,8 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Portal do Colaborador - CMR</title>
   <style>
-    :root { --primary-color: #008000; --accent-color: #ffcc00; --secondary-color: #cc0000; }
-    body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; background-color: var(--primary-color); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; transition: background-color 0.3s; overflow-x: hidden; }
+    :root {
+  --primary-color: #073B78;
+  --accent-color: #0866C6;
+  --secondary-color: #082D59;
+}
+    body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 20px 10px;
+  background:
+    radial-gradient(ellipse at 50% 30%, #1267B5 0%, transparent 65%),
+    linear-gradient(135deg, #06336E, #0756A5, #031D49);
+  background-attachment: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  box-sizing: border-box;
+  transition: background 0.3s;
+  overflow-x: hidden;
+}
     @keyframes subir { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     @keyframes girar { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
     .animar { animation: subir 0.5s ease-out forwards; }
@@ -19,11 +38,47 @@
     .barra-container { width: 200px; height: 8px; background: #eee; border-radius: 10px; margin-top: 20px; overflow: hidden; }
     .barra-progresso { width: 0%; height: 100%; background: var(--secondary-color); transition: width 0.2s; }
     .app-container { width: 100%; max-width: 400px; }
-    #cardLogo { background: #fff; padding: 15px; border-radius: 20px; margin: 10px 0; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-    .logo-estatica { width: 100px; }
-    .card-tela { background: #fff; padding: 25px; border-radius: 25px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    #cardLogo {
+  background: #fff;
+  padding: 15px;
+  border-radius: 20px;
+  margin: 10px 0;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+}
+
+.logo-estatica {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
+.card-tela {
+  background: #fff;
+  padding: 25px;
+  border-radius: 25px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
     .input-padrao { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; text-align: center; outline: none; }
-    .btn-acao { background: var(--accent-color); color: #000; width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 14px; }
+    .btn-acao {
+  background: linear-gradient(135deg, #0878DC, #073B78);
+  color: #fff;
+  width: 100%;
+  padding: 15px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(7,59,120,0.25);
+  transition: 0.3s;
+}
+
+.btn-acao:hover {
+  background: linear-gradient(135deg, #0565BD, #052D61);
+}
     #telaDados { display: none; background: #f0f2f5; border-radius: 35px; padding-bottom: 25px; overflow: hidden; }
     .header-user { background: var(--accent-color); padding: 12px; border-radius: 50px; margin: 15px; font-weight: 900; font-size: 13px; text-align: center; border: 1px solid #d4ac0d; text-transform: uppercase; }
     .main-card { background: transparent; margin: 0 15px; padding: 0; }
