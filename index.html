@@ -329,62 +329,6 @@ function animarContagem(id, valorFinal, formatador, textoFinal) {
   requestAnimationFrame(atualizar);
 }
 
-
-  var elemento = document.getElementById(id);
-
-  if (!elemento) return;
-
-  var destino = Number(
-    String(valorFinal).replace(",", ".")
-  );
-
-  if (!Number.isFinite(destino)) {
-    elemento.innerText = textoFinal;
-    return;
-  }
-
-  var inicio = 0;
-  var duracao = 1200;
-  var tempoInicial = performance.now();
-
-  elemento.classList.remove("numero-animando");
-
-  // Reiniciar a animação
-  void elemento.offsetWidth;
-
-  elemento.classList.add("numero-animando");
-
-  function atualizar(tempoAtual) {
-
-    var progresso = Math.min(
-      (tempoAtual - tempoInicial) / duracao,
-      1
-    );
-
-    // Movimento suave de desaceleração
-    var suavizacao = 1 - Math.pow(1 - progresso, 4);
-
-    var valorAtual =
-      inicio + (destino - inicio) * suavizacao;
-
-    elemento.innerText = formatador(valorAtual);
-
-    if (progresso < 1) {
-      requestAnimationFrame(atualizar);
-    } else {
-      // Garantir que o valor final seja exatamente o original
-      elemento.innerText = textoFinal;
-
-      setTimeout(function() {
-        elemento.classList.remove("numero-animando");
-      }, 100);
-    }
-  }
-
-  requestAnimationFrame(atualizar);
-}
-
-
 // Formatação dos números
 function formatarInteiro(valor) {
   return Math.round(valor).toLocaleString("pt-BR");
