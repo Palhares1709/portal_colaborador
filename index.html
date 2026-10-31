@@ -89,6 +89,27 @@
     .valor-mini-he { font-size: 28px; font-weight: bold; color: var(--primary-color); }
     .card-valor { background: #fff; border: 1px solid #eee; border-radius: 18px; padding: 15px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .texto-valor-monetario { font-size: 22px; font-weight: 900; color: var(--primary-color); display: block; margin-top: 2px; }
+    
+/* EFEITO PREMIUM APPLOC */
+.numero-animando {
+  animation: brilhoNumero 1.2s ease-out;
+}
+
+@keyframes brilhoNumero {
+  0% {
+    text-shadow: 0 0 0 transparent;
+  }
+  35% {
+    text-shadow: 0 0 12px rgba(0, 140, 255, 0.75);
+  }
+  70% {
+    text-shadow: 0 0 7px rgba(0, 140, 255, 0.35);
+  }
+  100% {
+    text-shadow: 0 0 0 transparent;
+  }
+}
+
     .icon-luxo { font-size: 28px; }
     .btn-sair { background: var(--accent-color); color: #ffffff; width: 85%; margin: 20px auto 0 auto; padding: 14px; border: 1px solid #d4ac0d; border-radius: 15px; font-weight: 900; display: block; cursor: pointer; text-transform: uppercase; }
   </style>
@@ -200,6 +221,86 @@
     }
 
     var erroCount = 0;
+    
+/**
+ * ANIMAÇÃO PREMIUM DOS VALORES
+ * Duração: 1,2 segundo
+ */
+
+function animarContagem(id, valorFinal, formatador, textoFinal) {
+
+  var elemento = document.getElementById(id);
+
+  if (!elemento) return;
+
+  var destino = Number(
+    String(valorFinal).replace(",", ".")
+  );
+
+  if (!Number.isFinite(destino)) {
+    elemento.innerText = textoFinal;
+    return;
+  }
+
+  var inicio = 0;
+  var duracao = 1200;
+  var tempoInicial = performance.now();
+
+  elemento.classList.remove("numero-animando");
+
+  // Reiniciar a animação
+  void elemento.offsetWidth;
+
+  elemento.classList.add("numero-animando");
+
+  function atualizar(tempoAtual) {
+
+    var progresso = Math.min(
+      (tempoAtual - tempoInicial) / duracao,
+      1
+    );
+
+    // Movimento suave de desaceleração
+    var suavizacao = 1 - Math.pow(1 - progresso, 4);
+
+    var valorAtual =
+      inicio + (destino - inicio) * suavizacao;
+
+    elemento.innerText = formatador(valorAtual);
+
+    if (progresso < 1) {
+      requestAnimationFrame(atualizar);
+    } else {
+      // Garantir que o valor final seja exatamente o original
+      elemento.innerText = textoFinal;
+
+      setTimeout(function() {
+        elemento.classList.remove("numero-animando");
+      }, 100);
+    }
+  }
+
+  requestAnimationFrame(atualizar);
+}
+
+
+// Formatação dos números
+function formatarInteiro(valor) {
+  return Math.round(valor).toLocaleString("pt-BR");
+}
+
+function formatarHoras(valor) {
+  return valor.toLocaleString("pt-BR", {
+    maximumFractionDigits: 2
+  }) + "h";
+}
+
+function formatarDinheiro(valor) {
+  return "R$ " + valor.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
 
     function abrirModal(titulo, texto, tipo, acaoOK) {
       document.getElementById("tituloAviso").innerText = titulo;
@@ -237,16 +338,75 @@
         
         if(res.status === "sucesso") {
           document.getElementById("txtNomeHeader").innerText = res.matricula + " - " + res.nome;
-          document.getElementById("fAnt").innerText = res.faltasAnt;
-          document.getElementById("fAtual").innerText = res.faltasMesAtual;
-          document.getElementById("fHoras").innerText = res.faltasHoras + "h";
-          document.getElementById("he50").innerText = res.horas50 + "h";
-          document.getElementById("he100").innerText = res.horas100 + "h";
-          var opt = { minimumFractionDigits: 2 };
-          document.getElementById("valGrat").innerText = "R$ " + res.gratificacao.toLocaleString('pt-BR', opt);
-          document.getElementById("valAssid").innerText = "R$ " + res.assiduidade.toLocaleString('pt-BR', opt);
-          document.getElementById("valAux").innerText = "R$ " + res.auxTransporte.toLocaleString('pt-BR', opt);
-          document.getElementById("valAjuda").innerText = "R$ " + res.ajudaCustos.toLocaleString('pt-BR', opt);
+          
+// ANIMAÇÃO DAS FALTAS
+animarContagem(
+  "fAnt",
+  res.faltasAnt,
+  formatarInteiro,
+  String(res.faltasAnt)
+);
+
+animarContagem(
+  "fAtual",
+  res.faltasMesAtual,
+  formatarInteiro,
+  String(res.faltasMesAtual)
+);
+
+// ANIMAÇÃO DAS HORAS
+animarContagem(
+  "fHoras",
+  res.faltasHoras,
+  formatarHoras,
+  res.faltasHoras + "h"
+);
+
+animarContagem(
+  "he50",
+  res.horas50,
+  formatarHoras,
+  res.horas50 + "h"
+);
+
+animarContagem(
+  "he100",
+  res.horas100,
+  formatarHoras,
+  res.horas100 + "h"
+);
+
+// ANIMAÇÃO DOS VALORES FINANCEIROS
+var opt = { minimumFractionDigits: 2 };
+
+animarContagem(
+  "valGrat",
+  res.gratificacao,
+  formatarDinheiro,
+  "R$ " + res.gratificacao.toLocaleString("pt-BR", opt)
+);
+
+animarContagem(
+  "valAssid",
+  res.assiduidade,
+  formatarDinheiro,
+  "R$ " + res.assiduidade.toLocaleString("pt-BR", opt)
+);
+
+animarContagem(
+  "valAux",
+  res.auxTransporte,
+  formatarDinheiro,
+  "R$ " + res.auxTransporte.toLocaleString("pt-BR", opt)
+);
+
+animarContagem(
+  "valAjuda",
+  res.ajudaCustos,
+  formatarDinheiro,
+  "R$ " + res.ajudaCustos.toLocaleString("pt-BR", opt)
+);
+
 
           document.body.style.backgroundColor = "#f0f2f5";
           document.getElementById("telaLogin").style.display = "none";
