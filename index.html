@@ -36,6 +36,46 @@
     .logo-loading { width: 100px; animation: girar 2.5s linear infinite; }
     .barra-container { width: 200px; height: 8px; background: #eee; border-radius: 10px; margin-top: 20px; overflow: hidden; }
     .barra-progresso { width: 0%; height: 100%; background: var(--secondary-color); transition: width 0.2s; }
+    /* CARREGAMENTO CIRCULAR APPLOC */
+#loadingLogin {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 29, 73, 0.72);
+  z-index: 20000;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.loading-caixa {
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 22px;
+  text-align: center;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.25);
+}
+
+.loading-circulo {
+  width: 65px;
+  height: 65px;
+  border: 6px solid #dcecff;
+  border-top: 6px solid #0866C6;
+  border-right: 6px solid #168BFF;
+  border-radius: 50%;
+  animation: girarLoading 0.8s linear infinite;
+  margin: 0 auto 18px;
+}
+
+@keyframes girarLoading {
+  to { transform: rotate(360deg); }
+}
+
+.loading-texto {
+  color: #073B78;
+  font-size: 14px;
+  font-weight: 800;
+}
     .app-container { width: 100%; max-width: 400px; }
     #cardLogo {
   background: #fff;
@@ -140,7 +180,19 @@
     </div>
   </div>
 
-  
+<!-- LOADING CIRCULAR APPLOC -->
+<div id="loadingLogin">
+  <div class="loading-caixa">
+    <div class="loading-circulo"></div>
+    <div class="loading-texto">
+      CONSULTANDO DADOS...
+    </div>
+    <p style="font-size:12px;color:#777;margin-bottom:0;">
+      Aguarde um instante.
+    </p>
+  </div>
+</div>
+<!-- FIM LOADING CIRCULAR -->  
 <!-- TELA DE CARREGAMENTO -->
 <div id="telaLoading">
 
@@ -236,7 +288,14 @@
     }
 
     var erroCount = 0;
-    
+// CONTROLE DO LOADING CIRCULAR
+function mostrarCarregamento() {
+  document.getElementById("loadingLogin").style.display = "flex";
+}
+
+function ocultarCarregamento() {
+  document.getElementById("loadingLogin").style.display = "none";
+}    
 /**
  * ANIMAÇÃO PREMIUM DOS VALORES
  * Duração: 1,2 segundo
@@ -383,7 +442,7 @@ function formatarDinheiro(valor) {
       if(!email) { msg.innerText = "Digite seu e-mail!"; return; }
       msg.style.color = "blue"; msg.innerText = "Conectando ao banco de dados...";
       document.getElementById("btnEntrar").disabled = true;
-
+mostrarCarregamento();
       try {
         // Chamada usando o novo método infalível
         const res = await chamarAPI("buscarDadosColaborador", [email]);
@@ -480,10 +539,13 @@ animarContagem(
           } else { msg.style.color = "red"; msg.innerText = res.mensagem; }
         }
       } catch (e) {
-        document.getElementById("btnEntrar").disabled = false;
-        msg.style.color = "red";
-        msg.innerText = "Erro ao conectar. Tente novamente.";
-      }
+  msg.style.color = "red";
+  msg.innerText = "Erro ao conectar. Tente novamente.";
+
+} finally {
+  ocultarCarregamento();
+  document.getElementById("btnEntrar").disabled = false;
+}
     }
 
     async function salvarNovoCadastro() {
